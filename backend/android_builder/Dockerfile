@@ -11,9 +11,9 @@ COPY requirements.txt ./requirements.txt
 RUN pip3 install --no-cache-dir --break-system-packages fastapi 'uvicorn[standard]' python-multipart
 COPY android_builder/worker.py ./worker.py
 RUN chown -R builder:builder /srv/builder \
- && chmod -R a-w /opt/gradle-8.7 /opt/android-sdk
+ && chmod -R a-w /opt/gradle-8.7 /opt/android-sdk-linux
 USER builder
-ENV ANDROID_HOME=/opt/android-sdk ANDROID_SDK_ROOT=/opt/android-sdk JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV ANDROID_HOME=/opt/android-sdk-linux ANDROID_SDK_ROOT=/opt/android-sdk-linux JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 CMD curl -fsS http://127.0.0.1:8080/health || exit 1
 CMD ["uvicorn", "worker:app", "--host", "0.0.0.0", "--port", "8080"]
