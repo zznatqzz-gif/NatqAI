@@ -1,0 +1,37 @@
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+*secret*
+*token*
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+.gradle/
+build/
+dist/
+*.apk
+*.aab
+*.log
+.DS_Store
+
+# Backup files
+*.bak
+*.bak.*
+
+# Local configuration and runtime data
+.env*
+!.env.example
+*.db
+*.sqlite*
+*.bak*
+*backup*
+runtime_home/
+data/

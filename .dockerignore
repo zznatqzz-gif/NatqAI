@@ -1,0 +1,21 @@
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.venv
+**/venv
+**/.env
+**/*.db
+**/*.sqlite*
+**/uploads
+**/workspace
+.git
+
+# Secrets and local backups
+.env*
+!.env.example
+*.pem
+*.key
+*.bak*
+*backup*
+runtime_home/
+data/

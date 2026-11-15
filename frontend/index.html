@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101322" />
+  <meta name="description" content="NatqAI — multilingual AI assistant and creative workspace." />
+  <title>NatqAI — AI Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div id="authView" class="auth-wrap">
+    <section class="auth-card">
+      <div class="auth-language"><label for="authLanguage" data-i18n="language">Language</label><select id="authLanguage" class="language-select"></select></div>
+      <div class="brand-mark">N<span>.</span></div>
+      <p class="eyebrow" data-i18n="tagline">Your personal AI workspace</p>
+      <h1><span data-i18n="welcome">Welcome to</span> <span>NatqAI</span></h1>
+      <p class="muted" data-i18n="subtitle">Talk, create, and bring your ideas to life with AI.</p>
+      <div class="tabs"><button class="tab active" data-mode="login" data-i18n="login">Log in</button><button class="tab" data-mode="register" data-i18n="register">Create account</button></div>
+      <form id="authForm">
+        <label id="nameField" class="hidden"><span data-i18n="name">Name</span><input name="name" autocomplete="name" minlength="2" data-i18n-placeholder="yourName" placeholder="Your full name"></label>
+        <label><span data-i18n="email">Email address</span><input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
+        <label><span data-i18n="password">Password</span><input name="password" type="password" autocomplete="current-password" minlength="8" required data-i18n-placeholder="passwordHint" placeholder="At least 8 characters"></label>
+        <button class="primary full" type="submit" id="authSubmit"><span data-i18n="signIn">Continue to NatqAI</span> <span>→</span></button>
+        <p id="authError" class="error" role="alert"></p>
+      </form>
+      <p class="tiny muted" data-i18n="demo">By continuing, you are using the NatqAI preview.</p>
+    </section>
+  </div>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="side-brand"><div class="brand-mark small">N<span>.</span></div><div><b>NatqAI</b><small data-i18n="brandSub">Intelligence that makes a difference</small></div><button class="icon-btn close-side" id="closeSide" aria-label="Close menu">×</button></div>
+      <button class="new-chat" id="newChat"><span>＋</span> <span data-i18n="newChat">New chat</span></button>
+      <button class="new-chat workspace-launch" id="newProject"><span>▣</span> <span id="projectsLabel">مشاريعي / Projects</span></button>
+      <div class="side-label" id="projectsHeading">المشاريع</div>
+      <div id="projectList" class="chat-list project-list"><p class="empty-side">لا توجد مشاريع بعد</p></div>
+      <div class="chat-heading"><div class="side-label" data-i18n="recent">Recent chats</div><button class="clear-chats" id="clearChats" type="button">مسح الكل</button></div>
+      <div id="chatList" class="chat-list"><p class="empty-side" data-i18n="noChats">No chats yet</p></div>
+      <div class="side-bottom"><div class="user-chip"><div class="avatar" id="userAvatar">N</div><div class="user-meta"><b id="userName">NatqAI User</b><small id="userEmail"></small></div><button class="icon-btn" id="logout" data-i18n-title="logout" title="Log out">↪</button></div><div class="side-foot">NatqAI <span>Preview</span></div></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><button class="icon-btn menu-btn" id="openSide" aria-label="Open menu">☰</button><div class="top-title"><span class="status-dot"></span> <span data-i18n="assistant">NatqAI Assistant</span> <small data-i18n="connected">Connected to server</small></div><select id="appLanguage" class="language-select top-language" aria-label="Language"></select><button class="mode-pill" title="AI Chat">AI Chat <span>✦</span></button></header>
+      <section class="workspace hidden" id="workspaceView" aria-label="Project workspace">
+        <div class="workspace-head"><div><p class="eyebrow">NATQAI WORKSPACE</p><h2 id="workspaceTitle">مساحة المشروع</h2><p class="muted" id="workspaceDescription">أنشئ ملفات مشروعك واحفظها هنا.</p></div><button class="icon-btn" id="closeWorkspace" type="button">✕</button></div>
+        <div class="workspace-generate"><label for="generatePrompt">صف البرنامج الذي تريد من NatqAI إنشاء ملفاته</label><textarea id="generatePrompt" rows="3" maxlength="8000" placeholder="مثال: أنشئ موقع مهام بسيطاً باستخدام HTML وCSS وJavaScript..."></textarea><div class="workspace-actions"><button class="primary" id="generateProject" type="button">✦ إنشاء ملفات المشروع بالذكاء الاصطناعي</button><button class="secondary" id="downloadProject" type="button">تنزيل المشروع ZIP</button><button class="secondary" id="buildAndroidPackage" type="button">تجهيز مشروع Android Studio</button><button class="primary" id="buildAndroidApk" type="button">بناء APK وتنزيله</button><span id="androidBuilderStatus" class="muted" aria-live="polite" role="status"></span><button class="secondary" id="uploadDeploymentSource" type="button">رفع ZIP وتجهيزه للنشر</button><input id="deploymentSourceInput" type="file" accept=".zip,application/zip" hidden><span id="deploymentSourceStatus" class="muted" aria-live="polite"></span><button class="secondary" id="reviewProject" type="button">فحص المشروع بالذكاء الاصطناعي</button><button class="secondary" id="checkProject" type="button">اختبار الصياغة الآمن</button><button class="secondary" id="deploymentReadiness" type="button">فحص جاهزية النشر</button></div><p class="muted">تجهيز Android ينشئ مشروعاً مصدرياً. زر بناء APK يستخدم خدمة بناء منفصلة؛ يلزم إعدادها على الخادم قبل أن يعمل. التوليد ينشئ ملفات نصية فقط. رفع ZIP يحفظ نسخة خاصة ويفحصها ولا يشغّل الكود أو ينشره تلقائياً.</p><div class="integration-panel" id="railwayPanel"><h3>اتصال Railway / Railway connection</h3><p class="muted" id="railwayStatus">غير متصل / Not connected</p><label for="railwayToken">Railway API token</label><input id="railwayToken" type="password" autocomplete="off" spellcheck="false" maxlength="4096" placeholder="أدخل الرمز هنا داخل NatqAI فقط"><div class="workspace-actions"><button class="secondary" id="connectRailway" type="button">التحقق والاتصال بـ Railway</button><button class="secondary" id="disconnectRailway" type="button" hidden>قطع الاتصال</button></div><p class="muted">يُرسل الرمز مباشرة إلى الخادم للتحقق ثم يُحفظ مشفراً. لا ترسله في المحادثة. الاتصال لا ينشر مشروعاً تلقائياً.</p><div class="railway-deploy-tools"><h4>إدارة مشاريع Railway</h4><div class="workspace-actions"><button class="secondary" id="loadRailwayProjects" type="button">تحميل المشاريع</button><select id="railwayProjectSelect" aria-label="مشروع Railway"><option value="">اختر المشروع</option></select><select id="railwayEnvironmentSelect" aria-label="بيئة Railway"><option value="">اختر البيئة</option></select><select id="railwayServiceSelect" aria-label="خدمة Railway"><option value="">اختر الخدمة</option></select></div><div class="workspace-actions"><button class="secondary" id="loadRailwayDeployments" type="button">سجل عمليات النشر</button><button class="secondary" id="refreshRailwayStatus" type="button">تحديث حالة آخر نشر</button><button class="primary" id="deployRailwayService" type="button">نشر المصدر المرتبط</button><button class="primary" id="deployUploadedSource" type="button">رفع ZIP ونشره على Railway</button><button class="secondary" id="redeployRailwayService" type="button">إعادة نشر الخدمة</button><button class="secondary" id="stopRailwayService" type="button">إيقاف الخدمة</button></div><div class="workspace-actions domain-tools"><input id="railwayCustomDomain" type="text" maxlength="253" placeholder="example.com" aria-label="النطاق المخصص"><input id="railwayDomainPort" type="number" min="1" max="65535" placeholder="Port (اختياري)" aria-label="منفذ الخدمة"><button class="secondary" id="addRailwayDomain" type="button">إضافة نطاق</button><button class="secondary" id="loadRailwayDomains" type="button">عرض النطاقات</button></div><div class="workspace-actions"><select id="railwayDomainSelect" aria-label="النطاقات المسجلة"><option value="">اختر نطاقاً لفحصه أو حذفه</option></select><button class="secondary" id="checkRailwayDomain" type="button">فحص DNS وSSL</button><button class="secondary" id="deleteRailwayDomain" type="button">حذف النطاق</button></div><p class="muted">بعد إضافة نطاق مخصص، انسخ سجلات DNS التي يعرضها Railway إلى مزود DNS. قد يستغرق انتشار DNS حتى 72 ساعة، وقد يظهر 404 قبل التحقق من سجل TXT وإصدار شهادة SSL. حذف النطاق يفصل هذا العنوان عن الخدمة.</p><p class="muted">الخيار الأول يعيد نشر المصدر المرتبط. الخيار الثاني يرفع آخر ZIP محفوظ إلى الخدمة المحددة ويبني المشروع على Railway. سيظهر الطلب أولاً بحالة QUEUED؛ لا يُعد النشر ناجحاً حتى تظهر SUCCESS. يمكنك تحديث حالة آخر عملية نشر من هنا. إعادة النشر تنشئ إصداراً جديداً؛ إيقاف الخدمة يزيل آخر نشر ناجح ولا يحذف الخدمة أو إعداداتها.</p><div class="workspace-actions"><button class="secondary" id="showBuildLogs" type="button">عرض سجلات البناء لآخر طلب</button><button class="secondary" id="showRuntimeLogs" type="button">عرض سجلات التشغيل لآخر طلب</button></div><pre id="deploymentLogs" class="review-report deployment-logs" aria-live="polite" dir="auto" hidden></pre><div id="railwayDeployReport" class="review-report" aria-live="polite"></div></div></div><div id="reviewReport" class="review-report hidden" aria-live="polite"></div></div>
+        <div class="workspace-tools"><input id="filePath" type="text" placeholder="مسار الملف، مثال: src/main.py" aria-label="File path"><button class="primary" id="newFile" type="button">ملف جديد</button><button class="primary" id="saveFile" type="button">حفظ الملف</button></div>
+        <div class="workspace-body"><div class="workspace-files"><b>ملفات المشروع</b><div id="projectFiles"><p class="empty-side">لا توجد ملفات</p></div></div><div class="workspace-editor"><textarea id="fileContent" spellcheck="false" placeholder="اكتب محتوى الملف هنا..."></textarea><p class="muted" id="workspaceStatus">اختر ملفاً أو أنشئ ملفاً جديداً.</p></div></div>
+      </section>
+      <section class="conversation" id="conversation">
+        <div class="welcome" id="welcome">
+          <div class="welcome-orb">✦</div>
+          <p class="eyebrow" data-i18n="ideas">Your ideas start here</p>
+          <h2><span data-i18n="howHelp">Hello! How can I help?</span></h2>
+          <p class="muted" data-i18n="askExplore">Ask, write, plan, or explore a new idea. I am here to help.</p>
+          <div class="suggestions">
+            <button class="suggestion" data-prompt-key="planPrompt"><span>↗</span><b data-i18n="plan">Plan a project</b><small data-i18n="planDesc">Turn your idea into clear steps</small></button>
+            <button class="suggestion" data-prompt-key="learnPrompt"><span>✧</span><b data-i18n="learn">Learn something new</b><small data-i18n="learnDesc">Simple explanations and practical examples</small></button>
+            <button class="suggestion" data-prompt-key="codePrompt"><span>⌘</span><b data-i18n="code">Write code</b><small data-i18n="codeDesc">Start building your software idea</small></button>
+            <button class="suggestion" data-prompt-key="createPrompt"><span>✎</span><b data-i18n="create">Create content</b><small data-i18n="createDesc">Write and shape ideas creatively</small></button>
+          </div>
+        </div>
+        <div id="messages" class="messages"></div>
+      </section>
+      <footer class="composer-wrap"><form id="messageForm" class="composer"><button id="attachButton" class="icon-btn attach-btn" type="button" aria-label="Attach files" title="Attach files">＋</button><input id="attachmentInput" type="file" multiple hidden><textarea id="messageInput" rows="1" maxlength="10000" data-i18n-placeholder="placeholder" placeholder="Write a message to NatqAI..." aria-label="Message"></textarea><button id="sendButton" class="send-btn" type="submit" data-i18n-aria="send" aria-label="Send message">↑</button></form><div class="composer-note" data-i18n="disclaimer">AI can make mistakes. Check important information.</div><div class="usage-note" id="usageNote" aria-live="polite"></div></footer>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="i18n.js"></script>
+  <script src="natqai-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
