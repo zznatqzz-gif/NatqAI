@@ -63,6 +63,12 @@ class OpenAICompatibleProvider:
                             yield delta
         except AIProviderError:
             raise
+        except httpx.HTTPStatusError as exc:
+            status = exc.response.status_code
+            detail = exc.response.text[:500]
+            print(f"AI PROVIDER HTTP ERROR: status={status}, detail={detail}", flush=True)
+            raise AIProviderError(f"خطأ مزود الذكاء الاصطناعي (HTTP {status}).") from exc
         except (httpx.HTTPError, OSError) as exc:
+            print(f"AI PROVIDER CONNECTION ERROR: {type(exc).__name__}: {str(exc)[:300]}", flush=True)
             raise AIProviderError("تعذر الاتصال بمزود الذكاء الاصطناعي أثناء البث.") from exc
 
