@@ -1,6 +1,7 @@
 """OpenAI-compatible chat provider gateway for NatqAI."""
 from __future__ import annotations
 import os
+from urllib.parse import urlparse
 import httpx
 
 class AIProviderError(RuntimeError):
@@ -8,7 +9,11 @@ class AIProviderError(RuntimeError):
 
 class OpenAICompatibleProvider:
     def __init__(self) -> None:
-        self.base_url = (os.getenv("NATQAI_AI_BASE_URL", "").strip().strip('"').strip("'") or "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
+        configured_url = os.getenv("NATQAI_AI_BASE_URL", "").strip().strip('"').strip("'")
+        parsed_url = urlparse(configured_url)
+        if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
+            configured_url = "https://generativelanguage.googleapis.com/v1beta/openai"
+        self.base_url = configured_url.rstrip("/")
         self.api_key = os.getenv("NATQAI_AI_API_KEY", "")
         self.model = os.getenv("NATQAI_AI_MODEL", "gemini-flash-lite-latest").strip() or "gemini-flash-lite-latest"
         self.timeout = float(os.getenv("NATQAI_AI_TIMEOUT", "60"))
