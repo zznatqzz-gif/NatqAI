@@ -8,9 +8,9 @@ class AIProviderError(RuntimeError):
 
 class OpenAICompatibleProvider:
     def __init__(self) -> None:
-        self.base_url = os.getenv("NATQAI_AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+        self.base_url = (os.getenv("NATQAI_AI_BASE_URL", "").strip().strip('"').strip("'") or "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
         self.api_key = os.getenv("NATQAI_AI_API_KEY", "")
-        self.model = os.getenv("NATQAI_AI_MODEL", "gpt-4o-mini")
+        self.model = os.getenv("NATQAI_AI_MODEL", "gemini-flash-lite-latest").strip() or "gemini-flash-lite-latest"
         self.timeout = float(os.getenv("NATQAI_AI_TIMEOUT", "60"))
 
     async def chat(self, messages: list[dict[str, str]]) -> dict:
