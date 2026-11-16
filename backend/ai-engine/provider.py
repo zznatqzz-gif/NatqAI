@@ -37,7 +37,13 @@ class OpenAICompatibleProvider:
             return {"content": content.strip(), "model": data.get("model", self.model), "usage": data.get("usage", {})}
         except AIProviderError:
             raise
+        except httpx.HTTPStatusError as exc:
+            status = exc.response.status_code
+            detail = exc.response.text[:500]
+            print(f"AI PROVIDER HTTP ERROR: status={status}, detail={detail}", flush=True)
+            raise AIProviderError("رفض مزود الذكاء الاصطناعي الطلب. راجع سجلات الخادم لمعرفة السبب.") from exc
         except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
+            print(f"AI PROVIDER ERROR: {type(exc).__name__}: {str(exc)[:300]}", flush=True)
             raise AIProviderError("تعذر الاتصال بمزود الذكاء الاصطناعي. تحقق من الإعدادات وحاول مجدداً.") from exc
     async def stream_chat(self, messages: list[dict[str, str]]):
         """Yield text deltas from an OpenAI-compatible SSE chat completion."""

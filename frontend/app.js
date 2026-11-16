@@ -370,6 +370,37 @@ $('#buildAndroidPackage').addEventListener('click',async()=>{
   }catch(err){toast(err.message);}finally{button.disabled=false;}
 });
 
+
+$('#checkAndroidBuilder').addEventListener('click',async()=>{
+  if(!currentProject){
+    toast(i18n.rtl?'اختر مشروعاً أولاً':'Choose a project first');
+    return;
+  }
+
+  const button=$('#checkAndroidBuilder');
+  const status=$('#androidBuilderStatus');
+  button.disabled=true;
+  status.textContent=i18n.rtl?'جارٍ فحص خدمة بناء Android...':'Checking Android builder...';
+
+  try{
+    const response=await fetch(API+`/api/v1/projects/${currentProject}/android-builder-status`,{
+      headers:{Authorization:`Bearer ${token}`}
+    });
+    const data=await response.json().catch(()=>({detail:t('requestError')}));
+    if(!response.ok) throw new Error(localizeError(data.detail)||t('requestError'));
+
+    status.textContent=data.ready
+      ? (i18n.rtl?'الخدمة جاهزة لاستقبال طلبات البناء.':'Builder is ready.')
+      : (data.message||(i18n.rtl?'خدمة البناء غير جاهزة.':'Builder is not ready.'));
+    toast(status.textContent);
+  }catch(err){
+    status.textContent=err.message;
+    toast(err.message);
+  }finally{
+    button.disabled=false;
+  }
+});
+
 $('#buildAndroidApk').addEventListener('click',async()=>{
   if(!currentProject){toast(i18n.rtl?'اختر مشروعاً أولاً':'Choose a project first');return;}
   const button=$('#buildAndroidApk');const original=button.textContent;const status=$('#androidBuilderStatus');button.disabled=true;
