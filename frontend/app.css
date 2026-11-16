@@ -70,3 +70,154 @@ html[dir="ltr"] .auth-wrap{direction:ltr}
 .deployment-logs{display:block;max-height:360px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 ui-monospace,SFMono-Regular,monospace;direction:auto}
 
 .chat-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.chat-heading .side-label{margin:25px 8px 10px}.clear-chats{border:0;background:transparent;color:var(--danger);font-size:10px;padding:5px 7px;border-radius:6px}.clear-chats:disabled{opacity:.35;cursor:not-allowed}.chat-item{gap:5px}.chat-open{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:start;border:0;background:transparent;color:inherit;font-size:12px;padding:0}.chat-delete{flex:0 0 25px;border:0;border-radius:6px;background:transparent;color:#ff858e;font-size:19px;line-height:1;padding:3px}.chat-delete:hover{background:#ff858e20}
+
+/* NatqNi — Modern Purple & White Identity */
+:root {
+  --bg: #f7f6fc;
+  --panel: #ffffff;
+  --panel2: #f0edfb;
+  --line: #e9e5f4;
+  --text: #25213a;
+  --muted: #817c96;
+  --accent: #7954df;
+  --accent2: #a58af7;
+  --danger: #df5268;
+}
+body { background: var(--bg); color: var(--text); }
+.auth-wrap {
+  background:
+    radial-gradient(ellipse at 50% 5%, #e7ddff 0, transparent 48%),
+    linear-gradient(135deg,#faf9ff,#f0edfa);
+}
+.auth-card {
+  background: rgba(255,255,255,.94);
+  border: 1px solid #e7e0f6;
+  box-shadow: 0 24px 75px #6041a51a;
+}
+.auth-card h1 span, .welcome h2 span { color: #7954df; }
+.auth-card label { color: #514b67; }
+.auth-card input {
+  background: #faf9fe;
+  border-color: #e8e3f2;
+  color: #29243d;
+}
+.tabs { background: #f0edfa; }
+.tab { color: #77718c; }
+.tab.active { background: #7954df; color: white; }
+.primary, .send-btn {
+  background: linear-gradient(110deg,#7048d5,#9a78ef);
+  box-shadow: 0 6px 18px #7954df28;
+}
+.sidebar {
+  background: #fff;
+  border-color: #e9e5f4;
+  box-shadow: 5px 0 25px #30205b08;
+}
+.side-brand b, .top-title { color: #302747; }
+.side-brand small, .side-label, .empty-side { color: #918ba4; }
+.new-chat {
+  background: #f3efff;
+  border-color: #e1d7ff;
+  color: #6846c4;
+}
+.chat-item { color: #5d5870; }
+.chat-item:hover, .chat-item.active {
+  background: #f1edfc;
+  color: #6846c4;
+}
+.avatar { background: #7954df; }
+.user-chip { border-color: #eeeaf5; }
+.icon-btn { color: #746b8b; }
+.main-area {
+  background:
+    radial-gradient(ellipse at 50% 0%,#eee8ff 0,transparent 48%),
+    #faf9fd;
+}
+.topbar {
+  background: #ffffffdc;
+  border-color: #eae6f2;
+}
+.status-dot { background: #36b99b; box-shadow: 0 0 10px #36b99b66; }
+.mode-pill {
+  background: #f2edff;
+  border-color: #e5dcfb;
+  color: #6948c5;
+}
+.welcome-orb {
+  color: white;
+  background: linear-gradient(145deg,#a78af5,#704bd4);
+  box-shadow: 0 14px 38px #7954df30;
+}
+.suggestion {
+  background: #fff;
+  border-color: #e9e4f3;
+  color: #302747;
+  box-shadow: 0 5px 20px #38245d08;
+}
+.suggestion:hover {
+  border-color: #b9a5f2;
+  background: #faf8ff;
+  transform: translateY(-2px);
+}
+.suggestion small { color: #89839b; }
+.message-avatar { background: #7954df; color: white; }
+.message.assistant .message-avatar { background: #e4f7f1; color: #168b70; }
+.bubble {
+  background: #fff;
+  border-color: #eae6f2;
+  color: #332d45;
+  box-shadow: 0 4px 16px #30205008;
+}
+.user .bubble, html[dir="ltr"] .message.user .bubble {
+  background: #eee8ff;
+  border-color: #e0d5ff;
+  color: #392b61;
+}
+html[dir="ltr"] .message.assistant .bubble { background: #fff; }
+.composer {
+  background: #fff;
+  border-color: #e6e0f1;
+  box-shadow: 0 8px 30px #3020500c;
+}
+.composer textarea { color: #302747; }
+.composer textarea::placeholder { color: #a29caf; }
+.composer-note, .usage-note { color: #918ba2; }
+.workspace { color: #302747; }
+.workspace-generate, .workspace-files, .workspace-editor,
+.integration-panel {
+  background: #fff;
+  border-color: #e8e2f1;
+  box-shadow: 0 5px 20px #30205008;
+}
+.workspace-tools input, .workspace-generate textarea,
+.workspace-editor textarea, .integration-panel input {
+  background: #faf9fd;
+  border-color: #e7e1f0;
+  color: #302747;
+}
+.workspace-actions .secondary {
+  background: #f1edfa;
+  border-color: #e4dcf3;
+  color: #6345b5;
+}
+.file-item { color: #514967; }
+.file-item:hover { background: #f2effa; }
+.review-report {
+  background: #faf9fd;
+  border-color: #e8e2f1;
+}
+.toast {
+  background: #302747;
+  color: #fff;
+}
+.language-select {
+  background: #fff;
+  border-color: #e6e0f0;
+  color: #403653;
+}
+button { transition: background .2s,border-color .2s,transform .2s; }
+button:disabled { opacity: .55; }
+@media(max-width:760px) {
+  .sidebar { box-shadow: -15px 0 45px #30205020; }
+  .topbar { background: #ffffffed; }
+}
