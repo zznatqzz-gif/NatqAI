@@ -425,5 +425,7 @@ def _limits():
     resource.setrlimit(resource.RLIMIT_CPU, (600, 610))
     resource.setrlimit(resource.RLIMIT_FSIZE, (MAX_APK_SIZE, MAX_APK_SIZE))
     resource.setrlimit(resource.RLIMIT_NOFILE, (128, 128))
-    if hasattr(resource, "RLIMIT_NPROC"):
-        resource.setrlimit(resource.RLIMIT_NPROC, (512, 512))
+    # Do not lower RLIMIT_NPROC for Gradle. This limit is shared by all
+    # processes/threads with the same UID and can make the shell launcher fail
+    # with "Cannot fork" before the Gradle JVM even starts. Railway/container
+    # process limits remain the outer safety boundary.
