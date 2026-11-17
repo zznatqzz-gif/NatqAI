@@ -31,6 +31,8 @@ class ProjectFileWriteIn(BaseModel):
 class ProjectGenerateIn(BaseModel):
     prompt: str = Field(min_length=10, max_length=8000)
     preferred_language: str | None = Field(default=None, max_length=35)
+    chat_id: int | None = None
+    chat_message: str | None = Field(default=None, max_length=10000)
 
 
 class ProjectReviewIn(BaseModel):

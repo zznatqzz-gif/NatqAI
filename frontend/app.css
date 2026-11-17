@@ -221,3 +221,11 @@ button:disabled { opacity: .55; }
   .sidebar { box-shadow: -15px 0 45px #30205020; }
   .topbar { background: #ffffffed; }
 }
+
+
+.chat-action { margin-top: 8px; }
+.chat-action p { margin: 10px 0; line-height: 1.7; }
+.chat-action-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chat-action-buttons button { padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+.chat-action-buttons .primary { background: #7954df; color: #fff; border: 1px solid #7954df; }
+.chat-action-buttons .secondary { background: #f1edfa; color: #6345b5; border: 1px solid #e4dcf3; }

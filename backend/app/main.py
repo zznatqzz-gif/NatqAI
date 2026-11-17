@@ -776,6 +776,24 @@ async def generate_project_files(
 ):
     """Generate a bounded set of text files from an explicit user request. Does not execute code."""
     require_owned_project(project_id, user["id"])
+
+    chat_id = data.chat_id
+    chat_message = (data.chat_message or data.prompt).strip()
+    if chat_id is not None:
+        with connection() as conn:
+            chat = conn.execute(
+                "SELECT id FROM chats WHERE id=? AND user_id=?",
+                (chat_id, user["id"]),
+            ).fetchone()
+            if not chat:
+                raise HTTPException(404, "المحادثة غير موجودة")
+            used = conn.execute(
+                "SELECT COUNT(*) AS n FROM usage_events "
+                "WHERE user_id=? AND date(created_at)=date('now')",
+                (user["id"],),
+            ).fetchone()["n"]
+        if used >= DAILY_MESSAGE_LIMIT:
+            raise HTTPException(429, "تم بلوغ الحد اليومي للرسائل. حاول مجدداً غداً.")
     existing = list_project_files(user["id"], project_id)
     if existing:
         raise HTTPException(409, "المشروع يحتوي على ملفات. أنشئ مشروعاً فارغاً للتوليد حتى لا تُستبدل ملفاتك.")
@@ -857,8 +875,49 @@ async def generate_project_files(
                 target.unlink()
         raise
 
+    summary = str(payload.get("summary", "تم إنشاء ملفات المشروع."))[:2000]
+    if chat_id is not None:
+        assistant_message = (
+            f"تم إنشاء ملفات المشروع بنجاح. {summary} "
+            f"رقم المشروع: {project_id}. عدد الملفات: {len(saved)}. "
+            "لم يبدأ بناء APK؛ يتطلب ذلك تأكيدك."
+        )
+        usage = result.get("usage") or {}
+        prompt_tokens = int(usage.get("prompt_tokens") or 0)
+        completion_tokens = int(usage.get("completion_tokens") or 0)
+        total_tokens = int(
+            usage.get("total_tokens") or (prompt_tokens + completion_tokens)
+        )
+        with connection() as conn:
+            conn.execute(
+                "INSERT INTO messages(chat_id,role,content) VALUES(?,?,?)",
+                (chat_id, "user", chat_message),
+            )
+            conn.execute(
+                "INSERT INTO messages(chat_id,role,content) VALUES(?,?,?)",
+                (chat_id, "assistant", assistant_message),
+            )
+            conn.execute(
+                "INSERT INTO usage_events(user_id,chat_id,model,prompt_tokens,completion_tokens,total_tokens) "
+                "VALUES(?,?,?,?,?,?)",
+                (
+                    user["id"], chat_id, str(result.get("model", ""))[:120],
+                    max(0, prompt_tokens), max(0, completion_tokens),
+                    max(0, total_tokens),
+                ),
+            )
+            existing = conn.execute(
+                "SELECT title FROM chats WHERE id=?", (chat_id,)
+            ).fetchone()
+            if existing and existing["title"] == "محادثة جديدة":
+                title = chat_message.replace("\n", " ")[:42]
+                conn.execute(
+                    "UPDATE chats SET title=? WHERE id=?",
+                    (title or "محادثة جديدة", chat_id),
+                )
+
     return {
-        "summary": str(payload.get("summary", "تم إنشاء ملفات المشروع."))[:2000],
+        "summary": summary,
         "files": saved,
         "model": result.get("model", ""),
         "status": "created",
