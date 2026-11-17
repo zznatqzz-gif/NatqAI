@@ -110,7 +110,7 @@ app.add_middleware(BuildRequestSizeLimitMiddleware, max_bytes=MAX_BUILD_REQUEST_
 TRUSTED_TEMPLATE_FILES = {
     "settings.gradle": "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\nrootProject.name = 'NatqAIAndroid'\ninclude ':app'\n",
     "build.gradle": "plugins { id 'com.android.application' version '8.6.1' apply false }\n",
-    "gradle.properties": "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8\nandroid.useAndroidX=true\n",
+    "gradle.properties": "org.gradle.jvmargs=-Xmx768m -Dfile.encoding=UTF-8\norg.gradle.workers.max=1\norg.gradle.parallel=false\norg.gradle.daemon=false\nandroid.useAndroidX=true\n",
     "app/build.gradle": "plugins { id 'com.android.application' }\n\ndependencies { implementation 'androidx.webkit:webkit:1.12.1' }\n\nandroid { namespace 'com.natqai.generated'; compileSdk 35\n defaultConfig { applicationId 'com.natqai.generated'; minSdk 23; targetSdk 35; versionCode 1; versionName '1.0' } }\n",
     "app/src/main/AndroidManifest.xml": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"><uses-permission android:name=\"android.permission.INTERNET\"/><application android:theme=\"@android:style/Theme.Material.Light.NoActionBar\" android:label=\"NatqAI App\" android:usesCleartextTraffic=\"false\"><activity android:name=\".MainActivity\" android:exported=\"true\"><intent-filter><action android:name=\"android.intent.action.MAIN\"/><category android:name=\"android.intent.category.LAUNCHER\"/></intent-filter></activity></application></manifest>\n",
     "app/src/main/java/com/natqai/generated/MainActivity.java": "package com.natqai.generated;\nimport android.app.Activity;\nimport android.os.Bundle;\nimport android.webkit.WebView;\nimport android.webkit.WebSettings;\nimport android.webkit.WebViewClient;\nimport android.webkit.WebResourceRequest;\nimport android.webkit.WebResourceResponse;\nimport androidx.webkit.WebViewAssetLoader;\npublic class MainActivity extends Activity { private WebView web; private WebViewAssetLoader assetLoader; @Override public void onCreate(Bundle b){ super.onCreate(b); assetLoader=new WebViewAssetLoader.Builder().addPathHandler(\"/assets/\", new WebViewAssetLoader.AssetsPathHandler(this)).build(); web=new WebView(this); WebSettings s=web.getSettings(); s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setAllowFileAccess(false); s.setAllowContentAccess(false); web.setWebViewClient(new WebViewClient(){ @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request){ return assetLoader.shouldInterceptRequest(request.getUrl()); } }); setContentView(web); web.loadUrl(\"https://appassets.androidplatform.net/assets/www/index.html\"); } @Override public void onBackPressed(){ if(web!=null && web.canGoBack()) web.goBack(); else super.onBackPressed(); } }\n",
@@ -204,7 +204,7 @@ async def _stop_process_group(process):
 
 async def _run_gradle_build(root: Path, env: dict, log_path: Path, request: Request):
     """Run Gradle without blocking the event loop; kill the whole process group on timeout/disconnect."""
-    command = ["gradle", "--no-daemon", "--max-workers=2", "--console=plain", "assembleDebug"]
+    command = ["gradle", "--no-daemon", "--max-workers=1", "--console=plain", "assembleDebug"]
     started = asyncio.get_running_loop().time()
     with log_path.open("wb") as log:
         process = await asyncio.create_subprocess_exec(
@@ -426,4 +426,4 @@ def _limits():
     resource.setrlimit(resource.RLIMIT_FSIZE, (MAX_APK_SIZE, MAX_APK_SIZE))
     resource.setrlimit(resource.RLIMIT_NOFILE, (128, 128))
     if hasattr(resource, "RLIMIT_NPROC"):
-        resource.setrlimit(resource.RLIMIT_NPROC, (128, 128))
+        resource.setrlimit(resource.RLIMIT_NPROC, (512, 512))
