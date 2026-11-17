@@ -152,11 +152,12 @@ async function handleChatManagementCommand(message){
 
 function isAndroidAppRequest(text){
   const value=String(text||'').trim();
-  const arabicCreation=/(?:أنشئ|انشئ|اصنع|سو[ّي]|ابنِ|ابني|حوّل|حول|أنشأ|انشاء|إنشاء|بناء|اعمل لي|سوي لي|جهز لي)/i;
-  const englishCreation=/\b(?:create|build|make|convert|generate)\b/i;
-  const android=/(?:أندرويد|اندرويد|android|apk)/i;
+  const creation=/(?:أنشئ|انشئ|اصنع|سو[ّي]|ابنِ|ابني|حوّل|حول|أنشأ|انشاء|إنشاء|بناء|اعمل لي|سوي لي|جهز لي|أريد|اريد|أحتاج|احتاج|أرغب|ارغب|أبغى|ابغى)/i;
+  const englishCreation=/\b(?:create|build|make|convert|generate|i want|i need|please make)\b/i;
   const app=/(?:تطبيق|برنامج|app|application)/i;
-  return (arabicCreation.test(value)||englishCreation.test(value))&&android.test(value)&&app.test(value);
+  const ios=/(?:\bios\b|iphone|ipad|آيفون|ايفون|آيباد)/i;
+  // Default unspecified app platforms to NatqAI's Android WebView build pipeline.
+  return !ios.test(value)&&app.test(value)&&(creation.test(value)||englishCreation.test(value));
 }
 
 function addAndroidProjectAction(project, builderReady, builderMessage){
@@ -181,6 +182,7 @@ function addAndroidProjectAction(project, builderReady, builderMessage){
 
   const actions=document.createElement('div');
   actions.className='chat-action-buttons';
+  let buildButton=null;
 
   const openButton=document.createElement('button');
   openButton.type='button';
@@ -190,10 +192,10 @@ function addAndroidProjectAction(project, builderReady, builderMessage){
   actions.appendChild(openButton);
 
   if(builderReady){
-    const buildButton=document.createElement('button');
+    buildButton=document.createElement('button');
     buildButton.type='button';
     buildButton.className='primary';
-    buildButton.textContent='تأكيد بناء APK';
+    buildButton.textContent='جارٍ تجهيز APK تلقائياً...';
     buildButton.addEventListener('click',()=>buildChatProjectApk(project.id,buildButton,detail));
     actions.appendChild(buildButton);
   }
@@ -203,6 +205,7 @@ function addAndroidProjectAction(project, builderReady, builderMessage){
   article.append(avatar,wrapper);
   $('#messages').appendChild(article);
   $('#conversation').scrollTop=$('#conversation').scrollHeight;
+  return {detail,buildButton};
 }
 
 async function createAndroidProjectFromChat(userPrompt){
@@ -256,12 +259,13 @@ async function createAndroidProjectFromChat(userPrompt){
     readiness.message=err.message;
   }
 
-  addAndroidProjectAction(project,Boolean(readiness.ready),readiness.message);
+  const action=addAndroidProjectAction(project,Boolean(readiness.ready),readiness.message);
+  if(readiness.ready&&action.buildButton){
+    await buildChatProjectApk(project.id,action.buildButton,action.detail);
+  }
 }
 
 async function buildChatProjectApk(projectId,button,detail){
-  if(!window.confirm('هل تؤكد الآن بدء بناء ملف APK لهذا المشروع؟ قد تستغرق العملية عدة دقائق.'))return;
-
   button.disabled=true;
   button.textContent='جارٍ فحص خدمة البناء...';
 
@@ -296,15 +300,16 @@ async function buildChatProjectApk(projectId,button,detail){
     link.remove();
     setTimeout(()=>URL.revokeObjectURL(url),5000);
 
-    detail.textContent='اكتمل البناء وتم التحقق من ملف APK وبدء تنزيله.';
+    detail.textContent='اكتمل البناء وتم التحقق من ملف APK وبدء تنزيله تلقائياً.';
     button.textContent='اكتمل بناء APK';
+    button.disabled=true;
     toast('اكتمل بناء APK بنجاح');
   }catch(err){
     detail.textContent='تعذر بناء APK: '+err.message;
     button.textContent='إعادة محاولة بناء APK';
     toast(err.message);
   }finally{
-    button.disabled=false;
+    if(button.textContent!=='اكتمل بناء APK')button.disabled=false;
   }
 }
 
@@ -314,7 +319,7 @@ if(isAndroidAppRequest(text)){
   addMessage('user',text.trim());
   const pending=document.createElement('div');
   pending.className='typing';
-  pending.textContent=i18n.rtl?'جارٍ إنشاء المشروع وتجهيز ملفات التطبيق...':'Creating project and preparing app files...';
+  pending.textContent=i18n.rtl?'جارٍ إنشاء التطبيق وبناء APK تلقائياً...':'Creating the app and building its APK automatically...';
   $('#messages').appendChild(pending);
   $('#conversation').scrollTop=$('#conversation').scrollHeight;
   try{
