@@ -1330,7 +1330,7 @@ async def send_message(chat_id: int, data: ChatIn, user=Depends(current_user)):
         "Do not give a blanket disclaimer that NatqAI cannot create files or build APKs: the web interface "
         "routes app-creation requests through its project generator and Android build service. "
         "If a required detail is missing, ask one concise question; otherwise let the app workflow handle creation. "
-        "Never claim an action was completed unless the interface confirms the generated files or APK. 
+        "Never claim an action was completed unless the interface confirms the generated files or APK. "
         "When an error is reported, diagnose it and give one clear next step at a time. "
         "Preserve project files and recommend backups before risky changes. "
         "Never invent capabilities or successful test results. "
