@@ -424,7 +424,12 @@ def _verify_apk_signature(apk: Path):
 def _limits():
     resource.setrlimit(resource.RLIMIT_CPU, (600, 610))
     resource.setrlimit(resource.RLIMIT_FSIZE, (MAX_APK_SIZE, MAX_APK_SIZE))
-    resource.setrlimit(resource.RLIMIT_NOFILE, (128, 128))
+    # Gradle opens many SDK/JAR/cache files during configuration. Keep the
+    # inherited hard limit, but raise the child soft limit as far as allowed
+    # (up to 4096) instead of imposing the previous 128-file ceiling.
+    _, nofile_hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    nofile_soft = 4096 if nofile_hard == resource.RLIM_INFINITY else min(4096, nofile_hard)
+    resource.setrlimit(resource.RLIMIT_NOFILE, (nofile_soft, nofile_hard))
     # Do not lower RLIMIT_NPROC for Gradle. This limit is shared by all
     # processes/threads with the same UID and can make the shell launcher fail
     # with "Cannot fork" before the Gradle JVM even starts. Railway/container
