@@ -152,7 +152,7 @@ async function handleChatManagementCommand(message){
 
 function isAndroidBuildRequest(text){
   const value=String(text||'').trim();
-  const apk=/(?:\\bapk\\b|ملف\\s*التطبيق|حزمة\\s*اندرويد)/i.test(value);
+  const apk=/(?:\bapk\b|ملف\s*التطبيق|حزمة\s*اندرويد)/i.test(value);
   const action=/(?:ابنِ|ابني|بناء|ابناؤ|أعد|اعد|إعادة|اعادة|حاول|شغّل|شغل|نفّذ|نفذ|ابدأ|ابدء|build|rebuild|retry|compile|generate|start)/i.test(value);
   return apk&&action;
 }
