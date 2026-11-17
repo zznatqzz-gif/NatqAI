@@ -150,6 +150,62 @@ async function handleChatManagementCommand(message){
 }
 
 
+function isAndroidBuildRequest(text){
+  const value=String(text||'').trim();
+  const apk=/(?:\\bapk\\b|ملف\\s*التطبيق|حزمة\\s*اندرويد)/i.test(value);
+  const action=/(?:ابنِ|ابني|بناء|ابناؤ|أعد|اعد|إعادة|اعادة|حاول|شغّل|شغل|نفّذ|نفذ|ابدأ|ابدء|build|rebuild|retry|compile|generate|start)/i.test(value);
+  return apk&&action;
+}
+
+async function buildExistingAndroidProjectFromChat(userPrompt){
+  const projects=await request('/api/v1/projects');
+  const ordered=[...projects].sort((a,b)=>b.id-a.id);
+  if(currentProject){
+    const selected=ordered.find(p=>p.id===currentProject);
+    if(selected)ordered.unshift(...ordered.splice(ordered.indexOf(selected),1));
+  }
+  let project=null;
+  for(const candidate of ordered){
+    try{
+      const files=await request(`/api/v1/projects/${candidate.id}/files`);
+      if(files.some(file=>file.path==='index.html')){project=candidate;break;}
+    }catch(_){}
+  }
+  if(!project)throw new Error('لم أجد مشروع تطبيق محفوظاً يحتوي على index.html. افتح المشروع الصحيح أو أنشئ التطبيق أولاً.');
+  currentProject=project.id;
+  const article=document.createElement('article');
+  article.className='message assistant';
+  const avatar=document.createElement('div');
+  avatar.className='message-avatar';
+  avatar.textContent='N';
+  const wrapper=document.createElement('div');
+  const bubble=document.createElement('div');
+  bubble.className='bubble chat-action';
+  const title=document.createElement('strong');
+  title.textContent='تم العثور على المشروع: '+project.name;
+  const detail=document.createElement('p');
+  detail.textContent='جارٍ التحقق من خدمة Android Builder ثم بدء بناء APK.';
+  const actions=document.createElement('div');
+  actions.className='chat-action-buttons';
+  const openButton=document.createElement('button');
+  openButton.type='button';
+  openButton.className='secondary';
+  openButton.textContent='فتح ملفات المشروع';
+  openButton.addEventListener('click',()=>openProject(project).catch(err=>toast(err.message)));
+  const buildButton=document.createElement('button');
+  buildButton.type='button';
+  buildButton.className='primary';
+  buildButton.textContent='بدء بناء APK';
+  buildButton.addEventListener('click',()=>buildChatProjectApk(project.id,buildButton,detail));
+  actions.append(openButton,buildButton);
+  bubble.append(title,detail,actions);
+  wrapper.appendChild(bubble);
+  article.append(avatar,wrapper);
+  $('#messages').appendChild(article);
+  $('#conversation').scrollTop=$('#conversation').scrollHeight;
+  await buildChatProjectApk(project.id,buildButton,detail);
+}
+
 function isAndroidAppRequest(text){
   const value=String(text||'').trim();
   const creation=/(?:أنشئ|انشئ|اصنع|سو[ّي]|ابنِ|ابني|حوّل|حول|أنشأ|انشاء|إنشاء|بناء|اعمل لي|سوي لي|جهز لي|أريد|اريد|أحتاج|احتاج|أرغب|ارغب|أبغى|ابغى)/i;
@@ -330,6 +386,18 @@ if(isAndroidAppRequest(text)){
     addMessage('assistant','تعذر إكمال إنشاء التطبيق: '+err.message);
     throw err;
   }
+  return;
+}
+if(isAndroidBuildRequest(text)){
+  addMessage('user',text.trim());
+  const pending=document.createElement('div');
+  pending.className='typing';
+  pending.textContent='جارٍ العثور على المشروع المحفوظ وبدء بناء APK...';
+  $('#messages').appendChild(pending);
+  $('#conversation').scrollTop=$('#conversation').scrollHeight;
+  try{await buildExistingAndroidProjectFromChat(text.trim());}
+  catch(err){addMessage('assistant','تعذر بدء بناء APK: '+err.message);toast(err.message);}
+  finally{pending.remove();}
   return;
 }
 addMessage('user',text.trim());const pending=document.createElement('div');pending.className='typing';pending.textContent=t('thinking');pending.id='typing';$('#messages').appendChild(pending);$('#conversation').scrollTop=$('#conversation').scrollHeight;const response=await fetch(API+`/api/v1/chats/${currentChat}/stream`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'text/event-stream','Accept-Language':i18n.code,Authorization:`Bearer ${token}`},body:JSON.stringify({message:text.trim(),preferred_language:i18n.code})});if(!response.ok){const err=await response.json().catch(()=>({detail:t('requestError')}));throw new Error(localizeError(err.detail)||t('requestError'));}$('#typing')?.remove();const article=document.createElement('article');article.className='message assistant';article.innerHTML=`<div class="message-avatar">N</div><div><div class="bubble" dir="auto"></div></div>`;$('#messages').appendChild(article);const bubble=article.querySelector('.bubble');const reader=response.body.getReader();const decoder=new TextDecoder();let buffer='',streamError='';while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const events=buffer.split('\n\n');buffer=events.pop()||'';for(const event of events){const line=event.split('\n').find(x=>x.startsWith('data:'));if(!line)continue;const payload=JSON.parse(line.slice(5).trim());if(payload.type==='delta'){bubble.textContent+=payload.content;$('#conversation').scrollTop=$('#conversation').scrollHeight;}else if(payload.type==='error'){streamError=payload.message||t('genericError');}}}if(streamError){article.remove();throw new Error(localizeError(streamError)||streamError);}if(!bubble.textContent.trim()){article.remove();throw new Error(t('genericError'));}await loadChats();await loadUsage();}catch(err){$('#typing')?.remove();toast(err.message);if(err.message.includes('غير مضبوط')||err.message.toLowerCase().includes('not configured'))addMessage('assistant',t('aiNotConfigured'));}finally{busy=false;$('#sendButton').disabled=false;$('#messageInput').focus();}}
