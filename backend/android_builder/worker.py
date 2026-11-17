@@ -2,6 +2,7 @@
 import asyncio
 import io
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -327,7 +328,29 @@ async def build_apk(request: Request, file: UploadFile = File(...), authorizatio
             # The caller has gone away; cleanup is handled by the outer finally block.
             raise HTTPException(499, "Build client disconnected")
         if result.returncode != 0:
-            # Build logs stay inside the disposable worker and are never returned to clients.
+            # Emit only selected, redacted Gradle diagnostics to Railway logs.
+            try:
+                log_text = log_path.read_text(encoding="utf-8", errors="replace")
+                markers = (
+                    "FAILURE:", "What went wrong:", "A problem occurred",
+                    "Execution failed", "Could not ", "SDK location",
+                    "not found", "requires", "error:", "failed",
+                )
+                selected = [
+                    line.strip() for line in log_text.splitlines()
+                    if any(marker.casefold() in line.casefold() for marker in markers)
+                ][-12:]
+                for line in selected:
+                    line = re.sub(
+                        r"(?i)(password|token|secret|authorization)\s*([=:])\s*\S+",
+                        r"\1\2[REDACTED]", line
+                    )
+                    line = re.sub(r"(https?://)[^/@\s]+@", r"\1[REDACTED]@", line)
+                    print("Gradle diagnostic:", line[:300], flush=True)
+                if not selected:
+                    print("Gradle failed; no matching diagnostic lines found.", flush=True)
+            except Exception:
+                print("Gradle failed; diagnostics could not be read.", flush=True)
             raise HTTPException(422, "Android build failed. Check Android SDK/Gradle compatibility.")
         apk = root / "app/build/outputs/apk/debug/app-debug.apk"
         if not apk.is_file() or not 1024 <= apk.stat().st_size <= MAX_APK_SIZE:
