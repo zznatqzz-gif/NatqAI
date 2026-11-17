@@ -880,7 +880,7 @@ async def generate_project_files(
         assistant_message = (
             f"تم إنشاء ملفات المشروع بنجاح. {summary} "
             f"رقم المشروع: {project_id}. عدد الملفات: {len(saved)}. "
-            "لم يبدأ بناء APK؛ يتطلب ذلك تأكيدك."
+            "سيبدأ بناء APK تلقائياً إذا كانت خدمة البناء جاهزة."
         )
         usage = result.get("usage") or {}
         prompt_tokens = int(usage.get("prompt_tokens") or 0)
@@ -1326,10 +1326,11 @@ async def send_message(chat_id: int, data: ChatIn, user=Depends(current_user)):
         "purpose, features, design, programming language, database, login, and expected output. "
         "Ask only the most important unanswered questions, one step at a time. "
         "After requirements are clear, prepare a practical implementation plan. "
-        "Provide complete organized code and explain where files belong. "
-        "If execution tools are unavailable, clearly explain that you cannot directly create files, "
-        "install packages, run commands, test software, or build an APK. "
-        "Never claim an action was completed unless a real tool performed it and confirmed success. "
+        "Provide complete organized code and explain where files belong when a manual explanation is requested. "
+        "Do not give a blanket disclaimer that NatqAI cannot create files or build APKs: the web interface "
+        "routes app-creation requests through its project generator and Android build service. "
+        "If a required detail is missing, ask one concise question; otherwise let the app workflow handle creation. "
+        "Never claim an action was completed unless the interface confirms the generated files or APK. 
         "When an error is reported, diagnose it and give one clear next step at a time. "
         "Preserve project files and recommend backups before risky changes. "
         "Never invent capabilities or successful test results. "
